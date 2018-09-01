@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<stores>
+	<store>
+		<filelds>
+			<data-type>VARCHAR</data-type>
+			<is-indexed>false</is-indexed>
+			<is-key>true</is-key>
+			<name>Name</name>
+		</filelds>
+		<filelds>
+			<data-type>VARCHAR</data-type>
+			<is-indexed>false</is-indexed>
+			<is-key>true</is-key>
+			<name>Origin</name>
+		</filelds>
+		<filelds>
+			<data-type>INT</data-type>
+			<is-indexed>true</is-indexed>
+			<is-key>false</is-key>
+			<name>Miles_per_Gallon</name>
+		</filelds>
+		<filelds>
+			<data-type>INT</data-type>
+			<is-indexed>false</is-indexed>
+			<is-key>false</is-key>
+			<name>Cylinders</name>
+		</filelds>
+		<filelds>
+			<data-type>INT</data-type>
+			<is-indexed>false</is-indexed>
+			<is-key>false</is-key>
+			<name>Displacement</name>
+		</filelds>
+		<filelds>
+			<data-type>INT</data-type>
+			<is-indexed>year</is-indexed>
+			<is-key>false</is-key>
+			<name>Horsepower</name>
+		</filelds>
+		<name>cars</name>
+		<termination-type>source</termination-type>
+	</store>
+
+</stores>
