@@ -5,7 +5,7 @@
 JSON data processor was an attempt tried over weekend to understand the challenges of transforming json data with ease.
 This is not a production ready library, but it surely does bare minimum.
 
-The idea is to in-memory database H2 and apply the data transformation using external xmls.
+The idea is to use in-memory database H2 and apply the data transformation using external xmls.
 
 The way it's achieved is as following.
 When the DataProcessorEngine starts, it reads all xmls from location specified.
@@ -51,6 +51,15 @@ DataProcessorEngine.loadJsonData(employmentDataFile,"employment");
 System.out.println("Mean employment by year");
 DataProcessorEngine.loadOutputData("meanemploymentratebyseries")
 ```
+
+You can also check your data by navigating to the following URL
+```
+http://localhost:8082
+```
+JDBC URL:jdbc:h2:mem:storage
+User name: sa
+Password: sa
+
 ### Prerequisites
 
 Setup JDK
