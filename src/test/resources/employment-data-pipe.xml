@@ -73,39 +73,4 @@
 		<name>meanemploymentrate</name>
 		<source-store>employmentperyear</source-store>
 	</virtual-stores>
-	<virtual-stores>
-	<virtual-fields>
-			<is-indexed>false</is-indexed>
-			<is-key>false</is-key>
-			<name>series</name>
-			<field-expression>series</field-expression>
-		</virtual-fields>
-		<virtual-fields>
-			<is-indexed>false</is-indexed>
-			<is-key>false</is-key>
-			<name>employment_count</name>
-			<field-expression>employment_count</field-expression>
-		</virtual-fields>
-		<virtual-fields>
-			<is-indexed>false</is-indexed>
-			<is-key>false</is-key>
-			<name>avg_employment_rate</name>
-			<field-expression>avg_employment_rate</field-expression>
-		</virtual-fields>
-		<virtual-fields>
-			<is-indexed>false</is-indexed>
-			<is-key>false</is-key>
-			<name>good_rate</name>
-			<field-expression>good_rate</field-expression>
-		</virtual-fields>
-		<virtual-fields>
-			<is-indexed>false</is-indexed>
-			<is-key>false</is-key>
-			<name>mean_employment_rate</name>
-			<field-expression>mean_employment_rate</field-expression>
-		</virtual-fields>
-		<goup-by>series</goup-by>
-		<name>meanemploymentratebyseries</name>
-		<source-store>meanemploymentrate cross join employmentperyear</source-store>
-	</virtual-stores>
 </stores>

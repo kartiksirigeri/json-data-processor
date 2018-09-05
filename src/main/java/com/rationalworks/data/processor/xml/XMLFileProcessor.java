@@ -65,6 +65,7 @@ public class XMLFileProcessor {
 				String ddl = ssc.generateCreateSQL();
 				logger.info("DDL[" + ddl + "]");
 				storeList.add(ddl);
+				tableMetadata.putAll(ssc.getTableMetadata());
 			}
 		}
 		return storeList;

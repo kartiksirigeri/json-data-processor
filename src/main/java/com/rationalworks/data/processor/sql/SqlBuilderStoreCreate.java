@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import com.rationalworks.data.processor.DataProcessorEngine;
 import com.rationalworks.data.processor.collection.MultiKeyMap;
 import com.rationalworks.data.processor.entity.Field;
 import com.rationalworks.data.processor.entity.Store;
@@ -29,12 +30,7 @@ public class SqlBuilderStoreCreate implements BaseSqlBuilder {
 		List<String> indexList = new ArrayList<String>();
 		
 		StringBuilder sb = new StringBuilder();
-		if (this.store.getTerminationType().equalsIgnoreCase("source")) {
-			sb.append("create table");
-		}else
-		{
-			sb.append("create view");
-		}
+		sb.append("create table");
 		sb.append(" ");
 		sb.append(this.store.getName());
 		sb.append(" ");
@@ -53,6 +49,7 @@ public class SqlBuilderStoreCreate implements BaseSqlBuilder {
 			}
 			tableMetadata.put(store.getName(),field.getName(), field.getDataType());
 		}
+		sb.append(","+DataProcessorEngine.SESSION_COLUMN+" varchar");
 		sb.append(");");
 		 Iterator<String> indexListItr = indexList.iterator();
 		 while(indexListItr.hasNext())

@@ -3,12 +3,16 @@ package com.rationalworks.data.processor.sql;
 import java.util.Iterator;
 import java.util.List;
 
+import com.rationalworks.data.processor.DataProcessorEngine;
+import com.rationalworks.data.processor.collection.MultiKeyMap;
 import com.rationalworks.data.processor.entity.VirtualField;
 import com.rationalworks.data.processor.entity.VirtualStore;
 
 public class SqlBuilderVirtualStoreCreate implements BaseSqlBuilder {
 
 	private VirtualStore store;
+	
+	private MultiKeyMap<String,String,String> tableMetadata= new MultiKeyMap<String, String,String>();
 	
 	public SqlBuilderVirtualStoreCreate(VirtualStore store) {
 		this.store = store;
@@ -36,8 +40,11 @@ public class SqlBuilderVirtualStoreCreate implements BaseSqlBuilder {
 				outputColumns.append(",");
 				selectedColumns.append(",");
 			}
+			tableMetadata.put(store.getName(),field.getName(), null);
 		}
 		sb.append(outputColumns.toString());
+		sb.append(",");
+		sb.append(DataProcessorEngine.SESSION_COLUMN);
 		sb.append(")");
 		sb.append(" ");
 		sb.append("as");
@@ -45,6 +52,8 @@ public class SqlBuilderVirtualStoreCreate implements BaseSqlBuilder {
 		sb.append("select");
 		sb.append(" ");
 		sb.append(selectedColumns);
+		sb.append(",");
+		sb.append(DataProcessorEngine.SESSION_COLUMN);
 		sb.append(" ");
 		sb.append("from");
 		sb.append(" ");
@@ -65,11 +74,27 @@ public class SqlBuilderVirtualStoreCreate implements BaseSqlBuilder {
 					sb.append(",");
 				}
 			}
+			sb.append(",");
+			sb.append(" ");
+			sb.append(DataProcessorEngine.SESSION_COLUMN);
 			
+		}else
+		{
+			sb.append("group by");
+			sb.append(" ");
+			sb.append(DataProcessorEngine.SESSION_COLUMN);
 		}
 		sb.append(";");
 
 		return sb.toString();
+	}
+
+	public MultiKeyMap<String, String, String> getTableMetadata() {
+		return tableMetadata;
+	}
+
+	public void setTableMetadata(MultiKeyMap<String, String, String> tableMetadata) {
+		this.tableMetadata = tableMetadata;
 	}
 
 }

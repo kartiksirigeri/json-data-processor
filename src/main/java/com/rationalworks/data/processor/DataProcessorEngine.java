@@ -11,7 +11,6 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -26,31 +25,36 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import com.rationalworks.data.processor.collection.MultiKeyMap;
-import com.rationalworks.data.processor.entity.Field;
 import com.rationalworks.data.processor.xml.XMLFileProcessor;
 
 public class DataProcessorEngine {
 	private static Server server = null;
 	private static JdbcConnectionPool connectionPool = null;
-	private static Server webServer = null;
 	private static MultiKeyMap<String, String, String> tableMetadata = new MultiKeyMap<String, String, String>();
+	public static String SESSION_COLUMN = "dps_sessionuid";
 
 	static Logger logger = Logger.getLogger(DataProcessorEngine.class.getName());
 
 	public static void initilize() {
 
-		// start the TCP Server
-		try {
-			webServer = Server.createWebServer("-web", "-webPort", "8082").start();
-			// server = Server.createTcpServer(new String[] { "-tcpPort",
-			// "8092", "-tcpAllowOthers" }).start();
+		//
+		// server = Server.createTcpServer(new String[] { "-tcpPort","8092", "-tcpAllowOthers" }).start();
+		if(null == DataProcessorEngine.connectionPool)
+		{
 			setConnectionPool(JdbcConnectionPool.create("jdbc:h2:mem:storage", "sa", "sa"));
+		}
 
+	}
+	
+	public static void initilize(int i) {
+		try {
+			server = Server.createWebServer("-web", "-webPort", "8082").start();
+			initilize();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
+		
 	}
 
 	public static void shutdown() {
@@ -82,7 +86,7 @@ public class DataProcessorEngine {
 				XMLFileProcessor xfp = new XMLFileProcessor();
 				xfp.setFile(files[i]);
 				List<String> ddls = xfp.getDDLs();
-				tableMetadata.putAll(xfp.getTableMetadata());
+				getTableMetadata().putAll(xfp.getTableMetadata());
 
 				Iterator<String> ddlItr = ddls.iterator();
 				while (ddlItr.hasNext()) {
@@ -141,23 +145,57 @@ public class DataProcessorEngine {
 
 	}
 
-	public static void loadOutputData(String storeName) {
+	public static JSONObject loadOutputData(String storeName) {
 		String SelectQuery = "select * from " + storeName;
 		PreparedStatement selectPreparedStatement = null;
+		 JSONObject json = new JSONObject();
+		 JSONArray jarr = new JSONArray();
+		 json.put("data", jarr);
 		try {
 			Connection connection = connectionPool.getConnection();
 			selectPreparedStatement = connection.prepareStatement(SelectQuery);
 			ResultSet rs = selectPreparedStatement.executeQuery();
 
 			ResultSetMetaData metaData = rs.getMetaData();
-			int columnCount = metaData.getColumnCount();
 
 			while (rs.next()) {
-				for (int columnIndex = 1; columnIndex <= columnCount; columnIndex++) {
-					Object object = rs.getObject(columnIndex);
-					System.out.printf("%s, ", object == null ? "NULL" : object.toString());
-				}
-				System.out.printf("%n");
+				int numColumns = metaData.getColumnCount();
+				JSONObject obj = new JSONObject();
+				  for( int i=1; i<numColumns+1; i++) {
+				    String column_name = metaData.getColumnName(i);
+
+				    switch( metaData.getColumnType( i ) ) {
+				      case java.sql.Types.ARRAY:
+				        obj.put(column_name, rs.getArray(column_name));     break;
+				      case java.sql.Types.BIGINT:
+				        obj.put(column_name, rs.getInt(column_name));       break;
+				      case java.sql.Types.BOOLEAN:
+				        obj.put(column_name, rs.getBoolean(column_name));   break;
+				      case java.sql.Types.BLOB:
+				        obj.put(column_name, rs.getBlob(column_name));      break;
+				      case java.sql.Types.DOUBLE:
+				        obj.put(column_name, rs.getDouble(column_name));    break;
+				      case java.sql.Types.FLOAT:
+				        obj.put(column_name, rs.getFloat(column_name));     break;
+				      case java.sql.Types.INTEGER:
+				        obj.put(column_name, rs.getInt(column_name));       break;
+				      case java.sql.Types.NVARCHAR:
+				        obj.put(column_name, rs.getNString(column_name));   break;
+				      case java.sql.Types.VARCHAR:
+				        obj.put(column_name, rs.getString(column_name));    break;
+				      case java.sql.Types.TINYINT:
+				        obj.put(column_name, rs.getInt(column_name));       break;
+				      case java.sql.Types.SMALLINT:
+				        obj.put(column_name, rs.getInt(column_name));       break;
+				      case java.sql.Types.DATE:
+				        obj.put(column_name, rs.getDate(column_name));      break;
+				      case java.sql.Types.TIMESTAMP:
+				        obj.put(column_name, rs.getTimestamp(column_name)); break;
+				      default:
+				        obj.put(column_name, rs.getObject(column_name));    break;
+				    }
+				  }
+				  jarr.add(obj);
 			}
 
 			selectPreparedStatement.close();
@@ -166,6 +204,7 @@ public class DataProcessorEngine {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		return json;
 
 	}
 
@@ -173,7 +212,7 @@ public class DataProcessorEngine {
 		JSONParser parser = new JSONParser();
 		Object object;
 		try {
-			Map<String, String> columnsKeys = tableMetadata.keySetFilteredByFirstKey(destinationStore);
+			Map<String, String> columnsKeys = getTableMetadata().keySetFilteredByFirstKey(destinationStore);
 			String paramString = "";
 			StringBuilder insertQueryBuilder = new StringBuilder();
 			insertQueryBuilder.append("INSERT INTO");
@@ -248,19 +287,6 @@ public class DataProcessorEngine {
 				insertPreparedStatement.close();
 				connection.close();
 			}
-
-			/*
-			 * Iterator<Person> personItr = inputData.iterator(); while
-			 * (personItr.hasNext()) { Person item = personItr.next();
-			 * Connection connection = connectionPool.getConnection();
-			 * insertPreparedStatement =
-			 * connection.prepareStatement(InsertQuery);
-			 * insertPreparedStatement.setInt(1, item.getId());
-			 * insertPreparedStatement.setString(2, item.getName());
-			 * insertPreparedStatement.setInt(3, item.getAge());
-			 * insertPreparedStatement.executeUpdate();
-			 * insertPreparedStatement.close(); connection.close(); }
-			 */
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -276,5 +302,26 @@ public class DataProcessorEngine {
 		}
 
 	}
+
+	public static DataProcessEngineSession getSession() {
+		DataProcessEngineSession dpsession  = new DataProcessEngineSession();
+		try {
+			dpsession.setConnection( connectionPool.getConnection());
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return dpsession;
+	}
+
+	public static MultiKeyMap<String, String, String> getTableMetadata() {
+		return tableMetadata;
+	}
+
+	public static void setTableMetadata(MultiKeyMap<String, String, String> tableMetadata) {
+		DataProcessorEngine.tableMetadata = tableMetadata;
+	}
+
+	
 
 }
