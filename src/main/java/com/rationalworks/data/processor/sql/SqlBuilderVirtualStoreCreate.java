@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.rationalworks.data.processor.DataProcessorEngine;
 import com.rationalworks.data.processor.collection.MultiKeyMap;
+import com.rationalworks.data.processor.entity.Join;
 import com.rationalworks.data.processor.entity.VirtualField;
 import com.rationalworks.data.processor.entity.VirtualStore;
 
@@ -53,11 +54,31 @@ public class SqlBuilderVirtualStoreCreate implements BaseSqlBuilder {
 		sb.append(" ");
 		sb.append(selectedColumns);
 		sb.append(",");
-		sb.append(DataProcessorEngine.SESSION_COLUMN);
+		if(null != this.store.getSourceStore())
+		{
+			sb.append(DataProcessorEngine.SESSION_COLUMN);
+		}else if(null != this.store.getJoins())
+		{
+			sb.append(this.store.getJoins().get(0).getLeftAlias()+"."+DataProcessorEngine.SESSION_COLUMN);
+		}
+		
 		sb.append(" ");
 		sb.append("from");
 		sb.append(" ");
+		if(null != this.store.getSourceStore())
+		{
 		sb.append(this.store.getSourceStore());
+		}else if(null != this.store.getJoins())
+		{
+			Iterator<Join> sItr = this.store.getJoins().iterator();
+			while(sItr.hasNext())
+			{
+				Join j = sItr.next();
+				JoinSQLBuilder jqb = new JoinSQLBuilder(j);
+				sb.append(jqb.generateCreateSQL());
+			}
+			
+		}
 		sb.append(" ");
 		if(this.store.getGroupBy() != null && this.store.getGroupBy().size()>0)
 		{
@@ -76,13 +97,25 @@ public class SqlBuilderVirtualStoreCreate implements BaseSqlBuilder {
 			}
 			sb.append(",");
 			sb.append(" ");
-			sb.append(DataProcessorEngine.SESSION_COLUMN);
+			if(null != this.store.getSourceStore())
+			{
+				sb.append(DataProcessorEngine.SESSION_COLUMN);
+			}else if(null != this.store.getJoins())
+			{
+				sb.append(this.store.getJoins().get(0).getLeftAlias()+"."+DataProcessorEngine.SESSION_COLUMN);
+			}
 			
 		}else
 		{
 			sb.append("group by");
 			sb.append(" ");
-			sb.append(DataProcessorEngine.SESSION_COLUMN);
+			if(null != this.store.getSourceStore())
+			{
+				sb.append(DataProcessorEngine.SESSION_COLUMN);
+			}else if(null != this.store.getJoins())
+			{
+				sb.append(this.store.getJoins().get(0).getLeftAlias()+"."+DataProcessorEngine.SESSION_COLUMN);
+			}
 		}
 		sb.append(";");
 

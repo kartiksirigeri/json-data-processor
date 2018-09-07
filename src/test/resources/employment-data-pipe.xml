@@ -67,10 +67,58 @@
 		<virtual-fields>
 			<is-indexed>false</is-indexed>
 			<is-key>false</is-key>
+			<name>series</name>
+			<field-expression>series</field-expression>
+		</virtual-fields>
+		<virtual-fields>
+			<is-indexed>false</is-indexed>
+			<is-key>false</is-key>
+			<name>avg_employment_count</name>
+			<field-expression>avg(count)</field-expression>
+		</virtual-fields>
+		<goup-by>series</goup-by>
+		<name>avgemploymentperyear</name>
+		<source-store>employment</source-store>
+	</virtual-stores>
+	<virtual-stores>
+		<virtual-fields>
 			<name>mean_employment_rate</name>
 			<field-expression>avg(avg_employment_rate)</field-expression>
 		</virtual-fields>
 		<name>meanemploymentrate</name>
 		<source-store>employmentperyear</source-store>
+	</virtual-stores>
+	<virtual-stores>
+		<virtual-fields>
+			<name>series</name>
+			<field-expression>mean_emp.series</field-expression>
+		</virtual-fields>
+		<virtual-fields>
+			<name>avg_employment_rate</name>
+			<field-expression>mean_emp.avg_employment_rate</field-expression>
+		</virtual-fields>
+		<virtual-fields>
+			<name>avg_employment_count</name>
+			<field-expression>avg_emp.avg_employment_count</field-expression>
+		</virtual-fields>
+		<name>employmentperyearwithmean</name>
+		<joins>
+			<join>
+            <on-conditions>
+                <on-condition>
+                    <condition-expression>mean_emp.series=avg_emp.series</condition-expression>
+                    <on-condition-type>and</on-condition-type>
+                </on-condition>
+            </on-conditions>
+            <join-type>inner join</join-type>
+            <left-store-alias>mean_emp</left-store-alias>
+            <left-store>employmentperyear</left-store>
+            <right-store-alias>avg_emp</right-store-alias>
+            <right-store>avgemploymentperyear</right-store>
+        </join>
+		</joins>
+		<goup-by>mean_emp.series</goup-by>
+		<goup-by>mean_emp.avg_employment_rate</goup-by>
+		<goup-by>avg_emp.avg_employment_count</goup-by>
 	</virtual-stores>
 </stores>

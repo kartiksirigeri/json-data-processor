@@ -6,7 +6,10 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -18,11 +21,13 @@ import org.json.simple.JSONObject;
 public class DataProcessEngineSession {
 	private UUID uid;
 	private Connection connection;
+	private Set<String> storeWithData;
 	
 	private Logger logger = Logger.getLogger(DataProcessorEngine.class.getName());
 
 	public DataProcessEngineSession() {
 		this.uid = UUID.randomUUID();
+		this.storeWithData = new HashSet<String>();
 	}
 
 	boolean loadJsonData(JSONObject jsonData, String storeName) {
@@ -101,12 +106,31 @@ public class DataProcessEngineSession {
 				insertPreparedStatement.executeUpdate();
 				insertPreparedStatement.close();
 			}
+			storeWithData.add(storeName);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return false;
 
+	}
+	
+	public void closeSession()
+	{
+		Iterator storeWithDataItr = this.storeWithData.iterator();
+		while(storeWithDataItr.hasNext())
+		{
+			String deleteSql = "delete from "+ storeWithDataItr.next()+" where "+ DataProcessorEngine.SESSION_COLUMN+"='"+ this.uid.toString()+"'";
+			try {
+				PreparedStatement deletePreparedStatement =  connection.prepareStatement(deleteSql);
+				deletePreparedStatement.execute();
+				deletePreparedStatement.close();
+				connection.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			};
+		}
 	}
 
 	public JSONObject fetchData(String storeName) {
@@ -190,7 +214,6 @@ public class DataProcessEngineSession {
 			}
 
 			selectPreparedStatement.close();
-			connection.close();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

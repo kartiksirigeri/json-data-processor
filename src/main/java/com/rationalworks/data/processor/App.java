@@ -20,8 +20,8 @@ public class App
     	
         System.out.println( "Begin");
         
-        DataProcessorEngine.initilize();
-        //DataProcessorEngine.initilize(8082);
+        //DataProcessorEngine.initilize();
+        DataProcessorEngine.initilize(8082);
         
         //Load all transformations
         String folderWithStoreDefinitions ="src/test/resources";
@@ -33,7 +33,8 @@ public class App
         JSONObject inputJson = (JSONObject) parser.parse(new FileReader(new File(inputDataFile)));
         dpsession.loadJsonData(inputJson, "employment");
         
-        JSONObject opJson = dpsession.fetchData("meanemploymentrate");
+        JSONObject opJson = dpsession.fetchData("employmentperyearwithmean");
+        dpsession.closeSession();
         System.out.println(opJson.toJSONString());
          
     }
