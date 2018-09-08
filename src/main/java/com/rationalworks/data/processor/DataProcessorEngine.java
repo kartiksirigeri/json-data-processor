@@ -29,7 +29,10 @@ public class DataProcessorEngine {
 		// server = Server.createTcpServer(new String[] { "-tcpPort","8092", "-tcpAllowOthers" }).start();
 		if(null == DataProcessorEngine.connectionPool)
 		{
-			setConnectionPool(JdbcConnectionPool.create("jdbc:h2:mem:storage", "sa", "sa"));
+			JdbcConnectionPool cpool = JdbcConnectionPool.create("jdbc:h2:mem:storage", "sa", "sa");
+			cpool.setMaxConnections(10);
+			logger.info("Max connections allowed:" + cpool.getMaxConnections());
+			setConnectionPool(cpool);
 		}
 
 	}

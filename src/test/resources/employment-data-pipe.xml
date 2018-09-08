@@ -117,8 +117,11 @@
             <right-store>avgemploymentperyear</right-store>
         </join>
 		</joins>
+		
 		<goup-by>mean_emp.series</goup-by>
+		<!--  
 		<goup-by>mean_emp.avg_employment_rate</goup-by>
 		<goup-by>avg_emp.avg_employment_count</goup-by>
+		-->
 	</virtual-stores>
 </stores>

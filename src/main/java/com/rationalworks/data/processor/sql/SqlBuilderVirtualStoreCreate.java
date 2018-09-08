@@ -1,7 +1,9 @@
 package com.rationalworks.data.processor.sql;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import com.rationalworks.data.processor.DataProcessorEngine;
 import com.rationalworks.data.processor.collection.MultiKeyMap;
@@ -27,21 +29,27 @@ public class SqlBuilderVirtualStoreCreate implements BaseSqlBuilder {
 		sb.append(this.store.getName());
 		sb.append(" ");
 		sb.append("(");
-		Iterator<VirtualField> fieldIterator = store.getFields().iterator();
+		
 		
 		StringBuilder outputColumns = new StringBuilder();
 		StringBuilder selectedColumns = new StringBuilder();
 		
+		Set<String> fieldExpressions = new HashSet<String>();
+		
+		Iterator<VirtualField> fieldIterator = store.getFields().iterator();
 		while (fieldIterator.hasNext()) {
 			VirtualField field = fieldIterator.next();
 			outputColumns.append(field.getName());
 			selectedColumns.append(field.getFieldExpression());
+			selectedColumns.append(" as ");
+			selectedColumns.append(field.getName());
 			if(fieldIterator.hasNext())
 			{
 				outputColumns.append(",");
 				selectedColumns.append(",");
 			}
 			tableMetadata.put(store.getName(),field.getName(), null);
+			fieldExpressions.add(field.getName());
 		}
 		sb.append(outputColumns.toString());
 		sb.append(",");
@@ -116,6 +124,23 @@ public class SqlBuilderVirtualStoreCreate implements BaseSqlBuilder {
 			{
 				sb.append(this.store.getJoins().get(0).getLeftAlias()+"."+DataProcessorEngine.SESSION_COLUMN);
 			}
+			
+			sb.append(" ");
+			/*
+			sb.append(",");
+			sb.append(" ");
+			// add group by fileds
+			Iterator<String> fieldExpressionsItr = fieldExpressions.iterator();
+			while(fieldExpressionsItr.hasNext())
+			{
+				sb.append(fieldExpressionsItr.next());
+				if(fieldExpressionsItr.hasNext())
+				{
+					sb.append(" ");
+					sb.append(",");
+				}
+			}
+			*/
 		}
 		sb.append(";");
 
